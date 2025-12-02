@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Medicine Tracker</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .time-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .page {
+            display: none;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            border-color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 16px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .btn-error {
+            background: var(--error);
+        }
+
+        .medicine-item {
+            background: var(--surface);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .medicine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .medicine-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .medicine-dosage {
+            color: var(--primary);
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .medicine-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .time-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .medicine-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-take {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-skip {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--error);
+            color: white;
+        }
+
+        .nav-bar {
+            display: flex;
+            background: var(--surface);
+            padding: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .message {
+            padding: 15px;
+            margin: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            max-width: 350px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .schedule-item {
+            background: var(--surface);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .schedule-item.taken {
+            border-left: 4px solid var(--success);
+            opacity: 0.7;
+        }
+
+        .schedule-item.pending {
+            border-left: 4px solid var(--warning);
+        }
+
+        .schedule-item.missed {
+            border-left: 4px solid var(--error);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .schedule-time {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .schedule-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-taken {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-missed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .time-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .time-input-row input {
+            flex: 1;
+        }
+
+        .remove-time {
+            background: var(--error);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-time {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <button class="theme-toggle">🌙</button>
+                <div class="time-display" id="currentTime">--:--</div>
+            </div>
+            <h1>Medicine Tracker</h1>
+            <p>Manage your medications with ease</p>
+        </header>
+
+        <div id="successMessage" class="message success"></div>
+        <div id="errorMessage" class="message error"></div>
+
+        <div class="notification" id="notification">
+            <div class="notification-content" id="notificationContent"></div>
+        </div>
+
+        <div id="homePage" class="page active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalMeds">0</div>
+                    <div class="stat-label">Medicines</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="takenToday">0/<span id="totalToday">0</span></div>
+                    <div class="stat-label">Taken Today</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="adherenceRate">0%</div>
+                    <div class="stat-label">Adherence</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="upcomingToday">0</div>
+                    <div class="stat-label">Upcoming</div>
+                </div>
+            </div>
+
+            <div class="menu-grid">
+                <div class="menu-item" onclick="showPage('addPage')">
+                    <h3>➕ Add Medicine</h3>
+                    <p>Add new medication</p>
+                </div>
+                <div class="menu-item" onclick="showPage('schedulePage')">
+                    <h3>📅 Today's Schedule</h3>
+                    <p>View today's doses</p>
+                </div>
+                <div class="menu-item" onclick="showPage('remindersPage')">
+                    <h3>💊 My Medicines</h3>
+                    <p>Manage medications</p>
+                </div>
+                <div class="menu-item" onclick="showPage('historyPage')">
+                    <h3>📋 History</h3>
+                    <p>Log history</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="addPage" class="page">
+            <h2>Add Medicine</h2>
+            <form id="medicineForm">
+                <div class="form-group">
+                    <label>Medicine Name *</label>
+                    <input type="text" id="medName" placeholder="e.g., Aspirin" required>
+                </div>
+                <div class="form-group">
+                    <label>Dosage *</label>
+                    <input type="text" id="medDosage" placeholder="e.g., 10mg tablet" required>
+                </div>
+                <div class="form-group">
+                    <label>Times Per Day *</label>
+                    <select id="medTimesPerDay" required onchange="app.updateTimeInputs()">
+                        <option value="1">Once a day</option>
+                        <option value="2">Twice a day</option>
+                        <option value="3">Three times a day</option>
+                        <option value="4">Four times a day</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Schedule Times *</label>
+                    <div id="timeInputsContainer" class="time-inputs">
+                        <div class="time-input-row">
+                            <input type="time" class="medTime" required>
+                        </div>
+                    </div>
+                    <button type="button" class="add-time" onclick="app.addTimeInput()">
+                        <span>+</span> Add Another Time
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Start Date *</label>
+                    <input type="date" id="medDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Instructions (Optional)</label>
+                    <textarea id="medInstructions" placeholder="Take with food, etc."></textarea>
+                </div>
+                <button type="submit" class="btn">💾 Save Medicine</button>
+            </form>
+        </div>
+
+        <div id="schedulePage" class="page">
+            <h2>Today's Schedule</h2>
+            <div id="scheduleList">
+                <p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
+                    Loading today's schedule...
+                </p>
+            </div>
+        </div>
+
+        <div id="remindersPage" class="page">
+            <h2>My Medicines</h2>
+            <div id="medicinesList">
+                <p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
+                    Loading medicines...
+                </p>
+            </div>
+        </div>
+
+        <div id="historyPage" class="page">
+            <h2>Medication History</h2>
+            <div class="form-group">
+                <label>Show history for last:</label>
+                <select id="historyDays" onchange="app.loadHistory()">
+                    <option value="7">7 days</option>
+                    <option value="14">14 days</option>
+                    <option value="30">30 days</option>
+                </select>
+            </div>
+            <div id="historyList">
+                <p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
+                    Loading history...
+                </p>
+            </div>
+        </div>
+
+        <div id="settingsPage" class="page">
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="notificationsEnabled" checked>
+                    Enable Notifications
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Reminder Lead Time (minutes)</label>
+                <input type="number" id="reminderLeadTime" min="1" max="60" value="5">
+            </div>
+            <button class="btn btn-secondary" onclick="exportData()">📤 Export Data</button>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="showPage('homePage')">🏠 Home</div>
+            <div class="nav-item" onclick="showPage('schedulePage')">📅 Today</div>
+            <div class="nav-item" onclick="showPage('addPage')">➕ Add</div>
+            <div class="nav-item" onclick="showPage('settingsPage')">⚙️ Settings</div>
+        </div>
+    </div>
+
+    <script>
+        class MedicineTracker {
+            constructor() {
+                this.medicines = [];
+                this.settings = {};
+                this.todaySchedule = [];
+            }
+
+            async init() {
+                console.log('Starting Enhanced Medicine Tracker...');
+                this.updateTime();
+                await this.loadSettings();
+                await this.loadMedicines();
+                await this.loadStatistics();
+                this.setupEventListeners();
+                setInterval(() => this.updateTime(), 1000);
+                setInterval(() => this.checkMedicines(), 30000);
+            }
+
+            updateTime() {
+                const now = new Date();
+                document.getElementById('currentTime').textContent = 
+                    now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+
+            async loadSettings() {
+                try {
+                    const response = await fetch('/api/settings');
+                    this.settings = await response.json();
+                    
+                    document.getElementById('notificationsEnabled').checked = 
+                        this.settings.notifications_enabled === 'true';
+                    document.getElementById('reminderLeadTime').value = 
+                        this.settings.reminder_lead_time || '5';
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                }
+            }
+
+            async saveSettings() {
+                try {
+                    const settings = {
+                        notifications_enabled: document.getElementById('notificationsEnabled').checked,
+                        reminder_lead_time: document.getElementById('reminderLeadTime').value
+                    };
+                    
+                    await fetch('/api/settings', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(settings)
+                    });
+                    
+                    this.settings = settings;
+                    showSuccess('Settings saved successfully');
+                } catch (error) {
+                    showError('Failed to save settings');
+                }
+            }
+
+            async loadMedicines() {
+                try {
+                    const response = await fetch('/api/medicines');
+                    this.medicines = await response.json();
+                    console.log('Loaded medicines:', this.medicines);
+                } catch (error) {
+                    console.error('Error loading medicines:', error);
+                    showError('Failed to load medicines');
+                }
+            }
+
+            async loadStatistics() {
+                try {
+                    const response = await fetch('/api/statistics');
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalMeds').textContent = stats.total_medicines;
+                    document.getElementById('takenToday').innerHTML = `${stats.taken_today}/<span id="totalToday">${stats.total_today}</span>`;
+                    document.getElementById('adherenceRate').textContent = stats.adherence_rate + '%';
+                    document.getElementById('upcomingToday').textContent = stats.upcoming_today;
+                    
+                    // Update progress bar
+                    const progress = stats.total_today > 0 ? (stats.taken_today / stats.total_today) * 100 : 0;
+                    document.getElementById('todayProgress').style.width = `${progress}%`;
+                } catch (error) {
+                    console.error('Error loading statistics:', error);
+                }
+            }
+
+            async loadTodaySchedule() {
+                try {
+                    const response = await fetch('/api/today-schedule');
+                    this.todaySchedule = await response.json();
+                    const list = document.getElementById('scheduleList');
+                    
+                    if (this.todaySchedule.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">No medications scheduled for today.</p>';
+                        return;
+                    }
+
+                    list.innerHTML = this.todaySchedule.map(item => {
+                        const scheduledTime = new Date(item.scheduled_time);
+                        const statusClass = `status-${item.status}`;
+                        
+                        return `
+                            <div class="schedule-item ${item.status}">
+                                <div class="schedule-header">
+                                    <div class="medicine-name">${item.medicine_name}</div>
+                                    <div class="schedule-status ${statusClass}">${item.status}</div>
+                                </div>
+                                <div class="medicine-dosage">${item.dosage}</div>
+                                <div class="schedule-time">${scheduledTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                ${item.instructions ? `<div class="medicine-instructions">${item.instructions}</div>` : ''}
+                                ${item.status === 'pending' ? `
+                                    <div class="medicine-actions">
+                                        <button class="action-btn btn-take" onclick="app.logDose(${item.id}, 'taken')">
+                                            ✅ Taken
+                                        </button>
+                                        <button class="action-btn btn-skip" onclick="app.logDose(${item.id}, 'missed')">
+                                            ⏭️ Skip
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                } catch (error) {
+                    console.error('Error loading today\'s schedule:', error);
+                }
+            }
+
+            async loadReminders() {
+                const list = document.getElementById('medicinesList');
+                
+                if (this.medicines.length === 0) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">No medicines added yet.</p>';
+                    return;
+                }
+
+                list.innerHTML = this.medicines.map(med => `
+                    <div class="medicine-item">
+                        <div class="medicine-header">
+                            <div class="medicine-name">${med.name}</div>
+                            <div class="medicine-dosage">${med.dosage}</div>
+                        </div>
+                        <div class="medicine-times">
+                            ${med.schedule.map(time => `
+                                <div class="time-badge">${time}</div>
+                            `).join('')}
+                        </div>
+                        ${med.instructions ? `<div class="medicine-instructions">${med.instructions}</div>` : ''}
+                        <div class="medicine-actions">
+                            <button class="action-btn btn-take" onclick="app.logMedicineDose('${med.name}', '${med.dosage}')">
+                                ✅ Log Dose
+                            </button>
+                            <button class="action-btn btn-delete" onclick="app.deleteMedicine(${med.id})">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadHistory() {
+                try {
+                    const days = document.getElementById('historyDays').value;
+                    const response = await fetch(`/api/logs?days=${days}`);
+                    const history = await response.json();
+                    const list = document.getElementById('historyList');
+                    
+                    if (history.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 40px 0;">No medication history yet.</p>';
+                        return;
+                    }
+
+                    list.innerHTML = history.map(entry => {
+                        const scheduledTime = new Date(entry.scheduled_time);
+                        const takenTime = entry.taken_time ? new Date(entry.taken_time) : null;
+                        const statusClass = `status-${entry.status}`;
+                        
+                        return `
+                            <div class="schedule-item ${entry.status}">
+                                <div class="schedule-header">
+                                    <div class="medicine-name">${entry.medicine_name}</div>
+                                    <div class="schedule-status ${statusClass}">${entry.status}</div>
+                                </div>
+                                <div class="medicine-dosage">${entry.dosage}</div>
+                                <div class="schedule-time">
+                                    Scheduled: ${scheduledTime.toLocaleString()}
+                                    ${takenTime ? `<br>Taken: ${takenTime.toLocaleString()}` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } catch (error) {
+                    console.error('Error loading history:', error);
+                }
+            }
+
+            updateTimeInputs() {
+                const timesPerDay = document.getElementById('medTimesPerDay').value;
+                const container = document.getElementById('timeInputsContainer');
+                
+                if (timesPerDay === 'custom') {
+                    // Keep existing custom inputs
+                    return;
+                }
+                
+                const count = parseInt(timesPerDay);
+                container.innerHTML = '';
+                
+                for (let i = 0; i < count; i++) {
+                    const timeRow = document.createElement('div');
+                    timeRow.className = 'time-input-row';
+                    timeRow.innerHTML = `
+                        <input type="time" class="medTime" required>
+                        ${i > 0 ? '<button type="button" class="remove-time" onclick="app.removeTimeInput(this)">×</button>' : ''}
+                    `;
+                    container.appendChild(timeRow);
+                }
+                
+                if (count > 1) {
+                    // Add the "Add Another Time" button
+                    const addButton = document.querySelector('.add-time');
+                    addButton.style.display = 'block';
+                } else {
+                    document.querySelector('.add-time').style.display = 'none';
+                }
+            }
+
+            addTimeInput() {
+                const container = document.getElementById('timeInputsContainer');
+                const timeRow = document.createElement('div');
+                timeRow.className = 'time-input-row';
+                timeRow.innerHTML = `
+                    <input type="time" class="medTime" required>
+                    <button type="button" class="remove-time" onclick="app.removeTimeInput(this)">×</button>
+                `;
+                container.appendChild(timeRow);
+                
+                // Update the times per day selector
+                document.getElementById('medTimesPerDay').value = 'custom';
+            }
+
+            removeTimeInput(button) {
+                button.parentElement.remove();
+                
+                // Update the times per day selector if we're back to a standard number
+                const timeInputs = document.querySelectorAll('.medTime');
+                if ([1, 2, 3, 4].includes(timeInputs.length)) {
+                    document.getElementById('medTimesPerDay').value = timeInputs.length.toString();
+                } else {
+                    document.getElementById('medTimesPerDay').value = 'custom';
+                }
+            }
+
+            async handleMedicineSubmit(e) {
+                e.preventDefault();
+                
+                const timeInputs = document.querySelectorAll('.medTime');
+                const schedule = Array.from(timeInputs).map(input => input.value).filter(Boolean);
+                
+                if (schedule.length === 0) {
+                    showError('Please add at least one schedule time');
+                    return;
+                }
+
+                const medicine = {
+                    name: document.getElementById('medName').value.trim(),
+                    dosage: document.getElementById('medDosage').value.trim(),
+                    times_per_day: schedule.length,
+                    schedule: schedule,
+                    start_date: document.getElementById('medDate').value,
+                    instructions: document.getElementById('medInstructions').value.trim()
+                };
+
+                if (!medicine.name || !medicine.dosage || !medicine.start_date) {
+                    showError('Please fill in all required fields');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/medicines', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(medicine)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showSuccess('Medicine added successfully!');
+                        e.target.reset();
+                        document.getElementById('medDate').valueAsDate = new Date();
+                        this.updateTimeInputs(); // Reset to default
+                        await this.loadMedicines();
+                        await this.loadStatistics();
+                        setTimeout(() => showPage('homePage'), 1000);
+                    } else {
+                        throw new Error(result.message);
+                    }
+                    
+                } catch (error) {
+                    showError('Failed to save medicine: ' + error.message);
+                }
+            }
+
+            async logDose(logId, status) {
+                try {
+                    const response = await fetch('/api/logs', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            log_id: logId,
+                            status: status
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showSuccess(`Dose marked as ${status}`);
+                        await this.loadStatistics();
+                        await this.loadTodaySchedule();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    showError('Error logging dose: ' + error.message);
+                }
+            }
+
+            async logMedicineDose(name, dosage) {
+                try {
+                    // Find today's pending log for this medicine
+                    const todayLog = this.todaySchedule.find(
+                        log => log.medicine_name === name && log.status === 'pending'
+                    );
+                    
+                    if (todayLog) {
+                        await this.logDose(todayLog.id, 'taken');
+                    } else {
+                        // Create a new log entry
+                        const response = await fetch('/api/logs', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                medicine_name: name,
+                                dosage: dosage,
+                                status: 'taken'
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            showSuccess(`Logged dose for ${name}`);
+                            await this.loadStatistics();
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    }
+                } catch (error) {
+                    showError('Error logging dose: ' + error.message);
+                }
+            }
+
+            async deleteMedicine(id) {
+                if (!confirm('Are you sure you want to delete this medicine?')) return;
+                
+                try {
+                    const response = await fetch(`/api/medicines/${id}`, {method: 'DELETE'});
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showSuccess('Medicine deleted successfully');
+                        await this.loadMedicines();
+                        await this.loadStatistics();
+                        if (document.getElementById('remindersPage').classList.contains('active')) {
+                            await this.loadReminders();
+                        }
+                        if (document.getElementById('schedulePage').classList.contains('active')) {
+                            await this.loadTodaySchedule();
+                        }
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    showError('Error deleting medicine: ' + error.message);
+                }
+            }
+
+            checkMedicines() {
+                if (!this.settings.notifications_enabled || this.settings.notifications_enabled === 'false') {
+                    return;
+                }
+
+                const now = new Date();
+                const currentTime = now.toTimeString().slice(0, 5);
+                
+                // Check if any medicine is due within the lead time
+                this.todaySchedule.forEach(item => {
+                    if (item.status === 'pending') {
+                        const scheduledTime = new Date(item.scheduled_time);
+                        const timeDiff = (scheduledTime - now) / (1000 * 60); // Difference in minutes
+                        
+                        const leadTime = parseInt(this.settings.reminder_lead_time || '5');
+                        
+                        if (timeDiff <= leadTime && timeDiff > 0) {
+                            this.showNotification(item);
+                        }
+                    }
+                });
+            }
+
+            showNotification(item) {
+                // Check if notification was already shown for this item
+                const notificationKey = `notification_${item.id}_${item.scheduled_time}`;
+                if (localStorage.getItem(notificationKey)) {
+                    return;
+                }
+                
+                const notification = document.getElementById('notification');
+                const content = document.getElementById('notificationContent');
+                
+                const scheduledTime = new Date(item.scheduled_time);
+                
+                content.innerHTML = `
+                    <h3>💊 Medicine Reminder</h3>
+                    <p><strong>${item.medicine_name}</strong> - ${item.dosage}</p>
+                    <p>Time: ${scheduledTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    ${item.instructions ? `<p>Instructions: ${item.instructions}</p>` : ''}
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-take" onclick="app.logDose(${item.id}, 'taken'); this.parentElement.parentElement.parentElement.classList.remove('show'); localStorage.setItem('${notificationKey}', 'true');">
+                            ✅ I Took It
+                        </button>
+                        <button class="btn btn-secondary" onclick="this.parentElement.parentElement.parentElement.classList.remove('show'); localStorage.setItem('${notificationKey}', 'true');">
+                            ⏰ Snooze
+                        </button>
+                    </div>
+                `;
+                
+                notification.classList.add('show');
+                
+                // Auto-hide after 2 minutes
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    localStorage.setItem(notificationKey, 'true');
+                }, 120000);
+            }
+
+            setupEventListeners() {
+                document.getElementById('medicineForm').addEventListener('submit', (e) => this.handleMedicineSubmit(e));
+                document.getElementById('medDate').valueAsDate = new Date();
+                
+                // Settings change listeners
+                document.getElementById('notificationsEnabled').addEventListener('change', () => this.saveSettings());
+                document.getElementById('reminderLeadTime').addEventListener('change', () => this.saveSettings());
+                
+                // Initialize time inputs
+                this.updateTimeInputs();
+            }
+        }
+
+        const app = new MedicineTracker();
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation
+            const navMap = {
+                'homePage': 'Home',
+                'schedulePage': 'Today',
+                'addPage': 'Add',
+                'remindersPage': 'Medicines',
+                'historyPage': 'History',
+                'settingsPage': 'Settings'
+            };
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.textContent.includes(navMap[pageId] || '')) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Load page-specific data
+            if (pageId === 'schedulePage') app.loadTodaySchedule();
+            if (pageId === 'remindersPage') app.loadReminders();
+            if (pageId === 'historyPage') app.loadHistory();
+            if (pageId === 'settingsPage') app.loadSettings();
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        async function exportData() {
+            try {
+                const response = await fetch('/api/export');
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `medicine-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showSuccess('Data exported successfully!');
+            } catch (error) {
+                showError('Failed to export data');
+            }
+        }
+
+        window.addEventListener('load', () => app.init());
+    </script>
+</body>
+</html>
