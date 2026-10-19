@@ -1,0 +1,63 @@
+.aurora-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+  filter: blur(48px);
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  opacity: 0.65;
+  animation: aurora-float 14s infinite alternate ease-in-out;
+}
+
+[data-theme='dark'] .aurora-blob {
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+.aurora-blob-1 {
+  width: 280px;
+  height: 280px;
+  background: var(--aurora-c1);
+  top: -40px;
+  left: -20px;
+  animation-duration: 16s;
+}
+
+.aurora-blob-2 {
+  width: 320px;
+  height: 240px;
+  background: var(--aurora-c2);
+  top: 10px;
+  right: -30px;
+  animation-duration: 18s;
+  animation-delay: -4s;
+}
+
+.aurora-blob-3 {
+  width: 250px;
+  height: 250px;
+  background: var(--aurora-c3);
+  bottom: -60px;
+  left: 30%;
+  animation-duration: 20s;
+  animation-delay: -8s;
+}
+
+@keyframes aurora-float {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.08);
+  }
+  100% {
+    transform: translate(-20px, 25px) scale(0.95);
+  }
+}

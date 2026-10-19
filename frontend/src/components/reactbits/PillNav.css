@@ -1,0 +1,76 @@
+.pill-nav-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-surface-secondary);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pill-nav-container::-webkit-scrollbar {
+  display: none;
+}
+
+.pill-nav-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(130, 148, 119, 0.35);
+  z-index: 1;
+}
+
+.pill-nav-item {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: var(--radius-pill);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.pill-nav-item:hover {
+  color: var(--text-main);
+}
+
+.pill-nav-item.is-active {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .pill-nav-item.is-active {
+  color: #151815;
+}
+
+.pill-nav-icon {
+  flex-shrink: 0;
+}
+
+.pill-nav-badge {
+  font-size: 0.6875rem;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface-tertiary);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pill-nav-badge.badge-active {
+  background: rgba(255, 255, 255, 0.25);
+  color: inherit;
+}

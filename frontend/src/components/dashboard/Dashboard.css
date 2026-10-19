@@ -1,0 +1,400 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.welcome-left {
+  max-width: 600px;
+}
+
+.welcome-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-subtle);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 10px;
+}
+
+.welcome-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.welcome-desc {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.welcome-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(130, 148, 119, 0.35);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.welcome-add-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.welcome-progress-bar-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.progress-percent-val {
+  color: var(--primary);
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--bg-surface-secondary);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #9EAF95);
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Metric Cards Grid */
+.stats-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  padding: 20px;
+}
+
+.metric-card .spotlight-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.metric-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.box-primary {
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+
+.box-success {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+}
+
+.box-upcoming {
+  background: var(--status-upcoming-bg);
+  color: var(--status-upcoming);
+}
+
+.box-lavender {
+  background: var(--lavender-subtle);
+  color: var(--lavender-text);
+}
+
+.metric-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.metric-total-denom {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.metric-subtext {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* Schedule Section */
+.dashboard-schedule-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-header h2 {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.section-subtitle {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
+
+.schedule-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-dose-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-xs);
+}
+
+.schedule-dose-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.schedule-dose-card.dose-taken {
+  opacity: 0.78;
+  background: var(--bg-surface-secondary);
+}
+
+.schedule-dose-card.dose-overdue {
+  border-left: 4px solid var(--status-missed);
+}
+
+.dose-time-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 65px;
+}
+
+.dose-time-val {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.dose-time-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dose-card-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-subtle);
+}
+
+.dose-info-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dose-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dose-med-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.dose-pill-dosage {
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.dose-instructions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.instruction-icon {
+  color: var(--status-warning);
+  flex-shrink: 0;
+}
+
+.dose-notes-text {
+  font-size: 0.78125rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.dose-timestamp {
+  font-size: 0.72rem;
+  color: var(--status-success);
+  font-weight: 600;
+}
+
+.dose-actions-column {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dose-action-btn {
+  padding: 7px 13px;
+  font-size: 0.8125rem;
+}
+
+.btn-skip {
+  color: var(--text-muted);
+}
+
+.dose-status-completed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--status-success);
+}
+
+.completed-check-icon {
+  color: var(--status-success);
+}
+
+.skeleton-welcome {
+  height: 140px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  margin-bottom: 24px;
+  animation: shimmer 1.6s infinite ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .welcome-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .welcome-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .schedule-dose-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dose-card-divider {
+    display: none;
+  }
+  .dose-time-column {
+    align-items: flex-start;
+  }
+  .dose-actions-column {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+  }
+}

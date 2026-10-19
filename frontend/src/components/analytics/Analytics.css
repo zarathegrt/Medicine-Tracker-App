@@ -1,0 +1,215 @@
+.analytics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.analytics-charts-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.chart-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+}
+
+.chart-card.flex-2 { flex: 2; }
+.chart-card.flex-1 { flex: 1; }
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.chart-subtitle {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.chart-container-box {
+  width: 100%;
+}
+
+.donut-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-empty {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  padding: 40px 0;
+}
+
+/* Custom Tooltip */
+.custom-chart-tooltip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.8125rem;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 4px;
+}
+
+.tooltip-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  margin: 3px 0;
+}
+
+.stat-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.stat-indicator.taken { background: #829477; }
+.stat-indicator.scheduled { background: #A3B49A; }
+.stat-indicator.skipped { background: #D8CCE8; }
+
+.tooltip-rate {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--primary);
+}
+
+/* Medicine Breakdown Card */
+.medicine-adherence-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-xs);
+}
+
+.med-adherence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.med-adherence-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 16px;
+  background: var(--bg-surface-secondary);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.med-row-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+}
+
+.med-row-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.med-row-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: block;
+}
+
+.med-row-dosage {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.med-row-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 160px;
+}
+
+.med-bar-track {
+  height: 8px;
+  background: var(--bg-surface-tertiary);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.med-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+  transition: width 0.6s ease;
+}
+
+.med-row-fraction {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.med-row-rate {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  color: var(--primary);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Info note */
+.analytics-info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--lavender-subtle);
+  border: 1px solid var(--lavender-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 0.8125rem;
+  color: var(--lavender-text);
+  line-height: 1.5;
+}
+
+.analytics-info-note .info-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--lavender-text);
+}
+
+@media (max-width: 900px) {
+  .analytics-charts-row {
+    flex-direction: column;
+  }
+}
