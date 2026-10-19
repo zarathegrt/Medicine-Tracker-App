@@ -4,7 +4,7 @@ Curavit is a modern, full-stack medication management web application built with
 
 ---
 
-## 🎨 Visual Design Direction & Palette
+##  Visual Design Direction & Palette
 
 Designed with a calm, premium healthcare aesthetic:
 
@@ -18,7 +18,7 @@ Designed with a calm, premium healthcare aesthetic:
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 ### 1. Dashboard
 - **Welcome Banner**: Dynamic time-based greeting, date display, daily completion progress bar, and animated **Aurora** gradient with **BlurText**.
@@ -81,7 +81,7 @@ Designed with a calm, premium healthcare aesthetic:
 
 ---
 
-## 🏃 Running the Application
+##  Running the Application
 
 ### Prerequisites
 - Python 3.10+ (with `flask` and `flask-cors`)
@@ -112,7 +112,7 @@ npm run dev
 
 ---
 
-## 📋 API Endpoints Summary
+##  API Endpoints Summary
 
 | Method | Endpoint | Description |
 |---|---|---|
