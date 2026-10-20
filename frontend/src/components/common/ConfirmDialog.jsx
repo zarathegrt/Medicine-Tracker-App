@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import './ConfirmDialog.css';
 
@@ -12,10 +12,19 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onCancel?.();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="confirm-overlay" onClick={onCancel} role="dialog" aria-modal="true">
+    <div className="confirm-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
       <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
         <button className="confirm-close-btn" onClick={onCancel} aria-label="Close dialog">
           <X size={18} />
@@ -26,7 +35,7 @@ export default function ConfirmDialog({
             <AlertTriangle size={22} />
           </div>
           <div className="confirm-titles">
-            <h3>{title}</h3>
+            <h3 id="confirm-dialog-title">{title}</h3>
             <p>{message}</p>
           </div>
         </div>

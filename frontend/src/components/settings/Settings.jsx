@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Settings as SettingsIcon,
   Bell,
   Clock,
   Globe,
   Download,
+  Upload,
   Activity,
   CheckCircle2,
   AlertCircle,
@@ -12,17 +13,27 @@ import {
   RotateCw,
   Sun,
   Moon,
+  BellRing,
+  Info,
+  ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import api from '../../services/api';
+import notificationService from '../../services/notificationService';
 import { useToast } from '../common/ToastContext';
+import ConfirmDialog from '../common/ConfirmDialog';
 import LoadingSkeleton from '../common/LoadingSkeleton';
 import './Settings.css';
 
 export default function Settings() {
   const toast = useToast();
+  const fileInputRef = useRef(null);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [healthStatus, setHealthStatus] = useState(null);
+  const [notifPermission, setNotifPermission] = useState(() => notificationService.getPermissionStatus());
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
 
   const [settings, setSettings] = useState({
     notifications_enabled: 'true',
@@ -47,7 +58,8 @@ export default function Settings() {
         }));
       }
       setHealthStatus(healthRes);
-    } catch (err) {
+      setNotifPermission(notificationService.getPermissionStatus());
+    } catch {
       toast.error('Failed to load settings');
     } finally {
       setLoading(false);
@@ -79,6 +91,33 @@ export default function Settings() {
     }
   };
 
+  // Notification permission handlers
+  const handleRequestPermission = async () => {
+    const perm = await notificationService.requestPermission();
+    setNotifPermission(perm);
+    if (perm === 'granted') {
+      toast.success('Browser notification permissions granted!');
+    } else if (perm === 'denied') {
+      toast.warning('Permission was denied. Please unblock notifications in your browser address bar.');
+    } else {
+      toast.info('Notification permission prompt dismissed.');
+    }
+  };
+
+  const handleTestNotification = () => {
+    if (notifPermission !== 'granted') {
+      toast.warning('Please enable browser notification permissions first');
+      return;
+    }
+    const success = notificationService.sendTestNotification();
+    if (success) {
+      toast.success('Test notification dispatched!');
+    } else {
+      toast.error('Could not send notification. Check operating system Focus or Do Not Disturb settings.');
+    }
+  };
+
+  // Export JSON Backup
   const handleExportData = async () => {
     try {
       const exportJson = await api.getExportData();
@@ -99,6 +138,54 @@ export default function Settings() {
     }
   };
 
+  // Validated Restore Workflow
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (!parsed.medicines || !Array.isArray(parsed.medicines) || !parsed.logs || !Array.isArray(parsed.logs)) {
+          toast.error('Invalid backup file: missing medicines or dose logs arrays');
+          return;
+        }
+
+        const medCount = parsed.medicines.length;
+        const logCount = parsed.logs.length;
+
+        // Prompt confirmation dialog
+        setConfirmConfig({
+          isOpen: true,
+          title: 'Restore Database Backup?',
+          message: `This will restore ${medCount} medication(s) and ${logCount} dose log(s). An automatic safety snapshot of your current database will be saved before restoring. Are you sure you want to proceed?`,
+          confirmLabel: 'Restore Database',
+          isDestructive: true,
+          onConfirm: async () => {
+            try {
+              const res = await api.restoreData(parsed);
+              toast.success(`Restored ${res.restored_medicines} medicines and ${res.restored_logs} dose logs!`);
+              setConfirmConfig({ isOpen: false });
+              await loadSettingsAndHealth();
+              window.dispatchEvent(new CustomEvent('curavit:medicine-added'));
+            } catch (err) {
+              toast.error(err.message || 'Failed to restore database');
+            }
+          },
+          onCancel: () => setConfirmConfig({ isOpen: false }),
+        });
+      } catch (err) {
+        toast.error('Failed to parse JSON file. Please ensure it is a valid Curavit export.');
+      } finally {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
   if (loading) {
     return (
       <div className="settings-page">
@@ -107,13 +194,15 @@ export default function Settings() {
     );
   }
 
+  const limitations = notificationService.getLimitationsNotice();
+
   return (
     <div className="settings-page">
       <div className="page-header-row">
         <div>
           <h1 className="page-main-title">Application Settings</h1>
           <p className="page-main-subtitle">
-            Configure reminder durations, UI themes, localization, and database backups
+            Configure reminder durations, browser notification permissions, themes, and database recovery
           </p>
         </div>
 
@@ -122,6 +211,7 @@ export default function Settings() {
           className="btn btn-secondary"
           onClick={loadSettingsAndHealth}
           title="Reload settings"
+          aria-label="Reload settings"
         >
           <RotateCw size={15} />
           <span>Reload</span>
@@ -129,15 +219,63 @@ export default function Settings() {
       </div>
 
       <form onSubmit={handleSave} className="settings-form-layout">
-        {/* Reminders & Snooze Section */}
+        {/* Reminders & Browser Alerts Section */}
         <div className="settings-section-card">
           <div className="section-title-wrap">
             <div className="section-icon-pill">
               <Bell size={18} />
             </div>
             <div>
-              <h3>Reminders & Dose Actions</h3>
-              <p>Configure reminder lead times and snooze intervals for dose prompts</p>
+              <h3>Reminders & Notifications</h3>
+              <p>Configure reminder lead times, snooze intervals, and browser alert permissions</p>
+            </div>
+          </div>
+
+          {/* Browser Permission Status Row */}
+          <div className="notif-permission-row">
+            <div className="setting-label-col">
+              <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Browser Push Notifications</span>
+              <span className="setting-desc">Status of OS/browser notification permission</span>
+            </div>
+
+            <div className="notif-action-btns">
+              <span className={`permission-status-pill ${notifPermission}`}>
+                {notifPermission === 'granted' && <CheckCircle2 size={13} />}
+                {notifPermission === 'denied' && <AlertCircle size={13} />}
+                {notifPermission === 'default' && <BellRing size={13} />}
+                {notifPermission === 'unsupported' && <Info size={13} />}
+                <span>
+                  {notifPermission === 'granted'
+                    ? 'Allowed'
+                    : notifPermission === 'denied'
+                    ? 'Blocked'
+                    : notifPermission === 'unsupported'
+                    ? 'Unsupported'
+                    : 'Not Requested'}
+                </span>
+              </span>
+
+              {notifPermission !== 'granted' && notifPermission !== 'unsupported' && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleRequestPermission}
+                >
+                  <BellRing size={14} />
+                  <span>Request Permission</span>
+                </button>
+              )}
+
+              {notifPermission === 'granted' && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleTestNotification}
+                  title="Dispatch a test browser notification"
+                >
+                  <span>Test Notification</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -202,6 +340,16 @@ export default function Settings() {
               </div>
             </div>
           </div>
+
+          {/* Transparent Browser Limitations Notice */}
+          <div className="notif-limitations-notice">
+            <h5>{limitations.title}</h5>
+            <ul>
+              {limitations.points.map((pt, idx) => (
+                <li key={idx}>{pt}</li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Display & Localization Section */}
@@ -261,7 +409,7 @@ export default function Settings() {
         <div className="settings-actions-bar">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             <Save size={16} />
-            <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+            <span>{saving ? 'Saving...' : 'Save Preferences'}</span>
           </button>
         </div>
       </form>
@@ -273,25 +421,45 @@ export default function Settings() {
             <Download size={18} />
           </div>
           <div>
-            <h3>Data Management & Server Health</h3>
-            <p>Export your full medication history and view backend connectivity</p>
+            <h3>Data Management & Safe Recovery</h3>
+            <p>Export JSON backups, restore verified medication records, and check backend connectivity</p>
           </div>
         </div>
 
         <div className="data-management-content">
           <div className="data-export-col">
-            <h4>Export Database Backup</h4>
+            <h4>Backup & Restore Records</h4>
             <p>
-              Download a complete JSON snapshot containing all your active medicines, dose history logs, and user preferences.
+              Download a complete JSON snapshot containing all your active medicines, dose history logs, and user preferences, or restore from a previously saved backup file.
             </p>
-            <button
-              type="button"
-              className="btn btn-secondary export-btn"
-              onClick={handleExportData}
-            >
-              <Download size={16} />
-              <span>Export JSON Backup</span>
-            </button>
+
+            <div className="data-actions-row">
+              <button
+                type="button"
+                className="btn btn-secondary export-btn"
+                onClick={handleExportData}
+              >
+                <Download size={16} />
+                <span>Export JSON Backup</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary export-btn"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload size={16} />
+                <span>Restore Backup</span>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+            </div>
           </div>
 
           <div className="server-health-col">
@@ -303,7 +471,7 @@ export default function Settings() {
                   <div>
                     <span className="health-title">Server Online & Healthy</span>
                     <span className="health-time">
-                      API responding at http://localhost:5000
+                      API responding at http://localhost:5000 (v{healthStatus?.version || '2.0.0'})
                     </span>
                   </div>
                 </>
@@ -320,6 +488,9 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Restore */}
+      <ConfirmDialog {...confirmConfig} />
     </div>
   );
 }

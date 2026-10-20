@@ -12,8 +12,10 @@ import {
   Bell,
   Calendar,
   Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 import api from '../../services/api';
+import notificationService from '../../services/notificationService';
 import { useToast } from '../common/ToastContext';
 import SpotlightCard from '../reactbits/SpotlightCard';
 import CountUp from '../reactbits/CountUp';
@@ -23,6 +25,7 @@ import StatusBadge from '../common/StatusBadge';
 import LoadingSkeleton from '../common/LoadingSkeleton';
 import EmptyState from '../common/EmptyState';
 import ConfirmDialog from '../common/ConfirmDialog';
+import CorrectDoseModal from '../common/CorrectDoseModal';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -32,7 +35,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [schedule, setSchedule] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [dialogConfig, setDialogConfig] = useState({ isOpen: false });
+  const [correctingDose, setCorrectingDose] = useState(null);
 
   // Compute greeting
   const hour = new Date().getHours();
@@ -40,12 +45,18 @@ export default function Dashboard() {
 
   const loadDashboardData = useCallback(async () => {
     try {
-      const [statsRes, scheduleRes] = await Promise.all([
+      const [statsRes, scheduleRes, settingsRes] = await Promise.all([
         api.getStatistics(),
         api.getTodaySchedule(),
+        api.getSettings().catch(() => ({})),
       ]);
       setStats(statsRes);
       setSchedule(scheduleRes || []);
+      if (settingsRes) {
+        setSettings(settingsRes);
+      }
+      // Check for upcoming medication alerts based on user lead time
+      notificationService.checkAndNotifyUpcomingDoses(scheduleRes || [], settingsRes || {});
     } catch (err) {
       toast.error(err.message || 'Failed to load dashboard data');
     } finally {
@@ -61,6 +72,16 @@ export default function Dashboard() {
     window.addEventListener('curavit:medicine-added', handleMedAdded);
     return () => window.removeEventListener('curavit:medicine-added', handleMedAdded);
   }, [loadDashboardData]);
+
+  // Periodic check for upcoming dose notifications
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (schedule.length > 0 && settings) {
+        notificationService.checkAndNotifyUpcomingDoses(schedule, settings);
+      }
+    }, 45000);
+    return () => clearInterval(timer);
+  }, [schedule, settings]);
 
   // Dose actions
   const handleMarkTaken = async (logId, medName) => {
@@ -95,9 +116,10 @@ export default function Dashboard() {
   };
 
   const handleSnooze = async (logId, medName) => {
+    const snoozeMin = parseInt(settings?.snooze_duration, 10) || 10;
     try {
-      const res = await api.snoozeDose(logId, 10);
-      toast.info(`Snoozed ${medName} by 10 minutes`);
+      await api.snoozeDose(logId, snoozeMin);
+      toast.info(`Snoozed ${medName} by ${snoozeMin} minutes`);
       await loadDashboardData();
     } catch (err) {
       toast.error(err.message || 'Failed to snooze dose');
@@ -339,7 +361,8 @@ export default function Dashboard() {
                           type="button"
                           className="btn btn-secondary dose-action-btn"
                           onClick={() => handleSnooze(item.id, item.medicine_name)}
-                          title="Snooze 10 minutes"
+                          title={`Snooze ${parseInt(settings?.snooze_duration, 10) || 10} minutes`}
+                          aria-label={`Snooze ${item.medicine_name}`}
                         >
                           <Clock size={15} />
                           <span>Snooze</span>
@@ -349,6 +372,7 @@ export default function Dashboard() {
                           className="btn btn-secondary dose-action-btn btn-skip"
                           onClick={() => handleSkipDose(item.id, item.medicine_name)}
                           title="Skip dose"
+                          aria-label={`Skip dose of ${item.medicine_name}`}
                         >
                           <SkipForward size={14} />
                           <span>Skip</span>
@@ -358,6 +382,16 @@ export default function Dashboard() {
                       <div className="dose-status-completed">
                         <CheckCircle2 size={16} className="completed-check-icon" />
                         <span>{isTaken ? 'Dose Logged' : 'Skipped'}</span>
+                        <button
+                          type="button"
+                          className="dose-undo-btn"
+                          onClick={() => setCorrectingDose(item)}
+                          title="Correct or undo this dose"
+                          aria-label={`Correct dose for ${item.medicine_name}`}
+                        >
+                          <RotateCcw size={12} />
+                          <span>Correct</span>
+                        </button>
                       </div>
                     )}
                   </div>
@@ -370,6 +404,14 @@ export default function Dashboard() {
 
       {/* Confirmation Dialog */}
       <ConfirmDialog {...dialogConfig} />
+
+      {/* Safe Dose Correction Modal */}
+      <CorrectDoseModal
+        isOpen={Boolean(correctingDose)}
+        dose={correctingDose}
+        onClose={() => setCorrectingDose(null)}
+        onSuccess={loadDashboardData}
+      />
     </div>
   );
 }

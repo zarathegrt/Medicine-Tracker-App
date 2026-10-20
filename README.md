@@ -1,10 +1,12 @@
-# Curavit — Modern Medicine Tracker
+# Curavit — Modern Medicine Tracker (with Caregiver Mode)
 
-Curavit is a modern, full-stack medication management web application built with a **React + Vite** frontend, subtle **React Bits** animations, **Recharts** analytics, and a **Python / Flask** REST API with SQLite database persistence.
+Curavit is a production-grade medication management and care team web application built with a **React + Vite** frontend, subtle **React Bits** animations, **Recharts** analytics, and a **Python / Flask** REST API backed by an ACID-compliant **SQLite** database.
+
+Curavit includes a complete, secure **Caregiver Mode** allowing patients to authorize trusted family members, nurses, or caregivers to monitor their medication adherence, review recorded doses, view daily summaries, and help log or correct doses under strict, least-privilege permission controls.
 
 ---
 
-##  Visual Design Direction & Palette
+## Visual Design Direction & Palette
 
 Designed with a calm, premium healthcare aesthetic:
 
@@ -18,74 +20,111 @@ Designed with a calm, premium healthcare aesthetic:
 
 ---
 
-##  Key Features
+## User Roles & Caregiver Mode Architecture
 
-### 1. Dashboard
-- **Welcome Banner**: Dynamic time-based greeting, date display, daily completion progress bar, and animated **Aurora** gradient with **BlurText**.
-- **Metrics Cards**: Active medicines, Doses taken today, Pending/Upcoming, and 7-Day adherence percentage using **SpotlightCard** and **CountUp** numerical animations.
-- **Today's Medication Schedule**: Chronological timeline showing dose status (Taken, Scheduled, Overdue, Skipped).
-- **Quick Dose Actions**: "Take Dose", "Snooze" (+10 min), and "Skip Dose" with immediate state reflection and backend synchronization.
+Curavit enforces strict, server-side Role-Based Access Control (RBAC) with cryptographic tokens and object-level authorization (IDOR prevention):
 
-### 2. My Medicines
-- Filterable and searchable medication catalog.
-- Filter by frequency (Daily, Weekly, As-Needed) and sort alphabetically or by start date.
-- **Add / Edit Medicine Modal**:
-  - Medicine name, dosage, frequency, start date, optional end date.
-  - Dynamically configurable schedule time inputs matching doses per day.
-  - Special instructions and notes.
-- Deactivate medications with a confirmation dialog while safely preserving all historical logs.
+### 1. Patient Role
+- **Owner of medication records and prescription data.**
+- Manages medicines, dosage regimens, schedules, and reminders.
+- Can invite trusted family members or caregivers by email with custom, granular permissions.
+- Can view all active caregivers, inspect their granted permissions, and immediately revoke access at any time.
+- Reviews an unalterable audit trail of caregiver activities and dose records.
 
-### 3. Dose History
-- Chronological table of all recorded intakes and scheduled events.
-- Filter by date range (Today, 7 days, 30 days, 90 days), status, or individual medicine.
-- Real-time search and pagination.
-- **Log Extra Dose**: Support for ad-hoc / PRN doses taken on demand.
-
-### 4. Analytics
-- **7-Day Trend Chart**: Recharts bar chart showing daily doses taken vs. scheduled.
-- **Dose Distribution**: Donut chart illustrating proportions of taken, skipped, and missed doses.
-- **Medication Adherence Breakdown**: Individual adherence rates per prescribed medicine.
-- Accurate calculations excluding future scheduled doses from denominators.
-
-### 5. Settings & Backups
-- In-app reminder toggles, configurable snooze duration (5m, 10m, 15m, 30m), reminder lead times, and language selector.
-- Live theme toggle: Light (Sage & Off-White) and Dark (Charcoal).
-- **Database Backup Export**: Download a full JSON dump (`/api/export`) of all medicines, logs, and user preferences.
-- Live backend connectivity and health check indicator (`/api/health`).
+### 2. Caregiver Role
+- Authenticated user authorized by one or more patients.
+- Can switch between authorized patients with an active patient selector.
+- **Overview & Daily Summary**:
+  - Live summary of total scheduled, taken, pending, overdue, and skipped doses.
+  - Weekly adherence rates (if `view_adherence` permission is granted).
+- **Today's Patient Schedule**:
+  - Medicine name, dosage, time, and physician instructions.
+  - Can record doses as taken or skipped **only** if the patient explicitly granted `record_doses`.
+  - Can correct dose mistakes **only** if explicitly granted `correct_doses`, requiring a mandatory clinical reason and logging a tamper-resistant audit trail.
+- **Strict Clinical Safety Boundaries**:
+  - Caregivers can **never** add new prescriptions, alter prescribed dosages, change medication schedules, change patient credentials, or export/restore patient databases.
 
 ---
 
-## ⚙️ Tech Stack
+## Granular Permissions System
+
+Patients control access on a per-caregiver basis with least-privilege defaults:
+
+| Permission | Description | Default |
+| :--- | :--- | :--- |
+| `view_medicines` | View prescribed medications, dosages, and instructions | Granted |
+| `view_schedule` | View daily scheduled dose times and current statuses | Granted |
+| `view_history` | Inspect past historical intake logs and dose records | Disabled |
+| `view_adherence` | View 7-day adherence percentages and trend analytics | Disabled |
+| `record_doses` | Mark scheduled doses as taken or skipped on patient's behalf | Disabled |
+| `correct_doses` | Correct misrecorded doses with mandatory recorded reasons | Disabled (Requires `record_doses`) |
+
+---
+
+## Security, Authentication & Session Handling
+
+- **Password Hashing**: Secure PBKDF2 with SHA-256 password hashing via `werkzeug.security`. Passwords are never stored in plaintext.
+- **Session Tokens**: Cryptographically secure 256-bit session tokens (`secrets.token_hex(32)`). Raw tokens are never stored in the database; only SHA-256 hashes are persisted, with automatic 7-day expiration.
+- **Browser Storage Security**: Tokens are maintained in `sessionStorage` and React memory, never persisted in localStorage.
+- **Object-Level Authorization**: Every endpoint verifies resource ownership (`g.current_user['id'] == patient_id`) or validates an active relationship in `caregiver_relationships`. URL tampering (IDOR) is strictly rejected with HTTP 403 Forbidden.
+- **Single-Use Cryptographic Invitations**: Secure URL-safe invitation tokens (`secrets.token_urlsafe(32)`) hashed in the database, with single-use consumption and automatic expiration.
+- **Safe Legacy Onboarding**: When upgrading an existing single-user installation, unassigned local records remain protected. The primary patient can link them via the onboarding checkbox or `/api/auth/claim-legacy`.
+
+---
+
+## Key Features
+
+### 1. Patient Dashboard
+- Dynamic time-based greeting, date display, daily completion progress bar, and animated **Aurora** gradient with **BlurText**.
+- Real-time dose status updates (Taken, Scheduled, Overdue, Skipped).
+- Quick dose actions: Take, Snooze (+10 min), and Skip with transaction safety.
+
+### 2. Care Team Management (`/care-team`)
+- View all authorized caregivers and their active permissions.
+- **Invite Caregiver Modal**: Email entry, granular permission checkboxes, and development invite link generator with one-click copy.
+- Edit permissions modal to adjust access levels on the fly.
+- Immediate revocation button to cut off access instantaneously.
+- Activity audit feed tracking caregiver actions and permission updates.
+
+### 3. Caregiver Dashboard (`/caregiver`)
+- Patient selector dropdown for multi-patient management.
+- Daily summary card with live dose counts and weekly adherence.
+- Today's schedule with permission-gated actions (Take, Skip, Correct).
+- Mandatory correction dialog requiring reason and stamping server-derived actor attribution.
+- Recent care activity timeline.
+
+### 4. Prescription & Medication Management (`/medicines`)
+- Filterable and searchable medication catalog.
+- Daily, weekly, and as-needed schedule configurations with slot validations.
+- Soft-deactivation preserving all historical dose intake records.
+
+### 5. Dose History & Audit Trail (`/history`)
+- Chronological table of all recorded intakes and scheduled events.
+- Audit trail detailing previous status, new status, timestamp, actor identity, and correction rationale.
+
+### 6. Analytics (`/analytics`)
+- 7-day adherence trends, dose distribution charts, and per-medication compliance rates.
+- Future pending doses are excluded from adherence denominators for clinical accuracy.
+
+---
+
+## Tech Stack
 
 ### Frontend (`/frontend`)
 - **Framework**: React 19 + Vite
 - **Routing**: React Router DOM (v7)
 - **Icons**: Lucide React
 - **Charts**: Recharts
-- **React Bits Components**:
-  - `PillNav`: Animated pill indicator navigation
-  - `CountUp`: Eased numerical counter animations (reduced-motion safe)
-  - `SpotlightCard`: Cursor-following radial light glow
-  - `BlurText`: Smooth blur-in text entrance
-  - `Aurora`: Low-opacity ambient background glow
-- **Styling**: Vanilla CSS Design System with CSS Custom Properties and responsive breakpoints.
+- **Design**: Vanilla CSS Design System with CSS Custom Properties, dark mode, and responsive layout.
 
 ### Backend (`/Medicine Tracker`)
 - **Framework**: Python, Flask, Flask-CORS
 - **Database**: SQLite (`medicines.db`)
-- **Key Enhancements**:
-  - **Idempotent Schedule Sync**: Recurring daily dose generation respecting start dates, end dates, and frequencies without duplicate creation.
-  - **Safe Database Management**: Preserves existing database records on startup using `CREATE TABLE IF NOT EXISTS`.
-  - **Windows UTF-8 Safe**: Configured `sys.stdout` and `sys.stderr` streams for emoji and Unicode stability.
-  - **Analytics API**: Aggregates 7-day adherence metrics and per-medication statistics.
+- **Authentication**: PBKDF2 password hashing, SHA-256 session tokens, RBAC decorators.
 
 ---
 
-##  Running the Application
-
-### Prerequisites
-- Python 3.10+ (with `flask` and `flask-cors`)
-- Node.js 18+ and npm
+## Running the Application
 
 ### 1. Start the Flask Backend
 ```bash
@@ -100,32 +139,34 @@ cd frontend
 npm install
 npm run dev
 ```
-> The React dashboard runs at **http://localhost:5173**
+> The web application runs at **http://localhost:5173**
 
 ---
 
-## 🌐 Environment Variables
+## Automated Test Suite
 
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:5000` | Backend API base URL for fetch requests |
+Curavit includes automated tests executed against isolated temporary databases:
+
+### Run Backend & Regression Tests
+```bash
+py -m unittest discover -s tests -p "test_backend.py"
+```
+
+### Run Caregiver Mode & Security Tests
+```bash
+py -m unittest discover -s tests -p "test_caregiver_and_auth.py"
+```
+
+### Run All Tests Together
+```bash
+py -m unittest discover -s tests
+```
+> **20/20 tests passing with 100% success.**
 
 ---
 
-##  API Endpoints Summary
+## Real-World Deployment Considerations
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/medicines` | List all active medications |
-| `POST` | `/api/medicines` | Add a new medication |
-| `PUT` | `/api/medicines/<id>` | Update medication details & schedule |
-| `DELETE` | `/api/medicines/<id>` | Deactivate medication (preserves history) |
-| `GET` | `/api/today-schedule` | Get today's scheduled doses |
-| `GET` | `/api/logs` | Fetch dose history logs with filters |
-| `POST` | `/api/logs` | Log dose intake, skip, or snooze |
-| `GET` | `/api/statistics` | Dashboard summary metrics |
-| `GET` | `/api/analytics` | 7-day adherence trend and breakdown |
-| `GET` | `/api/settings` | Retrieve user settings |
-| `POST` | `/api/settings` | Update user settings |
-| `GET` | `/api/export` | Download full JSON database backup |
-| `GET` | `/api/health` | Server connectivity check |
+- **Email Delivery**: The development environment uses a direct single-use invitation link generator. In production, configure an SMTP provider (e.g. Amazon SES, SendGrid) and set the `SMTP_*` environment variables.
+- **HTTPS & Cookies**: For internet deployments, serve over TLS/HTTPS with `Secure` and `SameSite=Strict` cookie headers.
+- **Production Secret**: Set `SECRET_KEY` and `MEDICINE_DB_PATH` in environment variables before deploying to production.

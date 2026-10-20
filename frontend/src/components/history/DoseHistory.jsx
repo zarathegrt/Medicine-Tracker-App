@@ -12,12 +12,14 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  RotateCcw,
 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../common/ToastContext';
 import StatusBadge from '../common/StatusBadge';
 import LoadingSkeleton from '../common/LoadingSkeleton';
 import EmptyState from '../common/EmptyState';
+import CorrectDoseModal from '../common/CorrectDoseModal';
 import './DoseHistory.css';
 
 const PAGE_SIZE = 15;
@@ -38,11 +40,16 @@ export default function DoseHistory() {
 
   // Quick ad-hoc log modal state
   const [isAdHocModalOpen, setIsAdHocModalOpen] = useState(false);
+  const [selectedMedId, setSelectedMedId] = useState('');
   const [adHocData, setAdHocData] = useState({
+    medicine_id: null,
     medicine_name: '',
     dosage: '',
     notes: '',
   });
+
+  // Dose correction modal state
+  const [correctingDose, setCorrectingDose] = useState(null);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -64,6 +71,34 @@ export default function DoseHistory() {
     loadLogs();
   }, [loadLogs]);
 
+  // Keyboard Escape listener for modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isAdHocModalOpen) {
+        setIsAdHocModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdHocModalOpen]);
+
+  const handleSelectPrescription = (medId) => {
+    setSelectedMedId(medId);
+    if (!medId) {
+      setAdHocData((prev) => ({ ...prev, medicine_id: null }));
+      return;
+    }
+    const found = medicines.find((m) => String(m.id) === String(medId));
+    if (found) {
+      setAdHocData({
+        medicine_id: found.id,
+        medicine_name: found.name,
+        dosage: found.dosage,
+        notes: adHocData.notes,
+      });
+    }
+  };
+
   // Handle ad-hoc dose logging
   const handleAdHocSubmit = async (e) => {
     e.preventDefault();
@@ -74,6 +109,7 @@ export default function DoseHistory() {
 
     try {
       await api.logDose({
+        medicine_id: adHocData.medicine_id || null,
         medicine_name: adHocData.medicine_name.trim(),
         dosage: adHocData.dosage.trim(),
         status: 'taken',
@@ -81,7 +117,8 @@ export default function DoseHistory() {
       });
       toast.success(`Dose for "${adHocData.medicine_name}" recorded!`);
       setIsAdHocModalOpen(false);
-      setAdHocData({ medicine_name: '', dosage: '', notes: '' });
+      setSelectedMedId('');
+      setAdHocData({ medicine_id: null, medicine_name: '', dosage: '', notes: '' });
       await loadLogs();
     } catch (err) {
       toast.error(err.message || 'Failed to record dose');
@@ -264,6 +301,7 @@ export default function DoseHistory() {
                 <th>Status</th>
                 <th>Taken Time</th>
                 <th>Notes & Context</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -319,6 +357,19 @@ export default function DoseHistory() {
                       ) : (
                         <span className="no-notes-text">—</span>
                       )}
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm history-correct-btn"
+                        onClick={() => setCorrectingDose(log)}
+                        title="Correct this record"
+                        aria-label={`Correct dose entry for ${log.medicine_name}`}
+                      >
+                        <RotateCcw size={12} />
+                        <span>Correct</span>
+                      </button>
                     </td>
                   </tr>
                 );
@@ -382,8 +433,25 @@ export default function DoseHistory() {
 
             <form onSubmit={handleAdHocSubmit} className="ad-hoc-form">
               <div className="form-group">
-                <label>Medicine Name *</label>
+                <label htmlFor="adhoc-prescription">Select From My Prescriptions</label>
+                <select
+                  id="adhoc-prescription"
+                  value={selectedMedId}
+                  onChange={(e) => handleSelectPrescription(e.target.value)}
+                >
+                  <option value="">-- Choose from your medicines (or enter below) --</option>
+                  {medicines.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.dosage})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="adhoc-name">Medicine Name *</label>
                 <input
+                  id="adhoc-name"
                   type="text"
                   placeholder="e.g. Ibuprofen, Antacid"
                   value={adHocData.medicine_name}
@@ -393,8 +461,9 @@ export default function DoseHistory() {
               </div>
 
               <div className="form-group">
-                <label>Dosage *</label>
+                <label htmlFor="adhoc-dosage">Dosage *</label>
                 <input
+                  id="adhoc-dosage"
                   type="text"
                   placeholder="e.g. 200mg, 1 tablet"
                   value={adHocData.dosage}
@@ -404,8 +473,9 @@ export default function DoseHistory() {
               </div>
 
               <div className="form-group">
-                <label>Notes / Reason</label>
+                <label htmlFor="adhoc-notes">Notes / Reason</label>
                 <input
+                  id="adhoc-notes"
                   type="text"
                   placeholder="e.g. Mild headache after lunch"
                   value={adHocData.notes}
@@ -429,6 +499,14 @@ export default function DoseHistory() {
           </div>
         </div>
       )}
+
+      {/* Safe Dose Correction Modal */}
+      <CorrectDoseModal
+        isOpen={Boolean(correctingDose)}
+        dose={correctingDose}
+        onClose={() => setCorrectingDose(null)}
+        onSuccess={loadLogs}
+      />
     </div>
   );
 }

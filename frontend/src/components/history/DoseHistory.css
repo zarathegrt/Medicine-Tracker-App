@@ -173,6 +173,15 @@
   gap: 14px;
 }
 
+.history-correct-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .history-filters-bar {
     flex-direction: column;

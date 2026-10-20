@@ -6,33 +6,31 @@ import {
   History,
   BarChart3,
   Settings,
+  Users,
+  HeartHandshake,
   Sun,
   Moon,
   Plus,
   HeartPulse,
-  Menu,
-  X,
   Clock,
+  LogOut,
+  Shield,
+  User
 } from 'lucide-react';
 import PillNav from '../reactbits/PillNav';
 import AddMedicineModal from '../medicines/AddMedicineModal';
+import AuthPage from '../auth/AuthPage';
 import api from '../../services/api';
+import { useAuth } from '../../services/authContext';
 import './AppLayout.css';
-
-const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/medicines', label: 'My Medicines', icon: Pill },
-  { path: '/history', label: 'Dose History', icon: History },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { path: '/settings', label: 'Settings', icon: Settings },
-];
 
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading, logout, caregiverPatients } = useAuth();
+
   const [theme, setTheme] = useState(() => localStorage.getItem('curavit_theme') || 'light');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Apply theme to html root
@@ -53,19 +51,53 @@ export default function AppLayout() {
     try {
       await api.updateSettings({ theme: nextTheme });
     } catch {
-      // Non-blocking setting update
+      // Non-blocking
     }
   };
 
+  // Compute navigation items based on user role and authorized relationships
+  const isCaregiverEligible = user?.role === 'caregiver' || user?.role === 'both' || (caregiverPatients && caregiverPatients.length > 0);
+  const isPatientEligible = user?.role !== 'caregiver';
+
+  const navItems = [
+    ...(isPatientEligible ? [{ path: '/', label: 'Dashboard', icon: LayoutDashboard }] : []),
+    ...(isCaregiverEligible ? [{ path: '/caregiver', label: 'Caregiver Portal', icon: HeartHandshake }] : []),
+    ...(isPatientEligible ? [
+      { path: '/medicines', label: 'My Medicines', icon: Pill },
+      { path: '/history', label: 'Dose History', icon: History },
+      { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+      { path: '/care-team', label: 'Care Team', icon: Users },
+    ] : []),
+    { path: '/settings', label: 'Settings', icon: Settings },
+  ];
+
   // Mobile pill nav handler
   const currentPath = location.pathname;
-  const activeNavItem = NAV_ITEMS.find((item) => 
+  const activeNavItem = navItems.find((item) => 
     item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path)
-  ) || NAV_ITEMS[0];
+  ) || navItems[0] || { path: '/', label: 'Dashboard' };
 
   const handleMobileNavChange = (path) => {
     navigate(path);
   };
+
+  // Loading Splash Screen
+  if (loading) {
+    return (
+      <div className="curavit-splash-screen">
+        <div className="splash-icon-box">
+          <HeartPulse size={36} className="splash-pulse" />
+        </div>
+        <h2 className="splash-title">Curavit</h2>
+        <p className="splash-sub">Verifying secure session...</p>
+      </div>
+    );
+  }
+
+  // Not authenticated: render AuthPage
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
 
   return (
     <div className="app-shell">
@@ -81,20 +113,47 @@ export default function AppLayout() {
           </div>
         </div>
 
-        <div className="sidebar-action-wrap">
+        {/* User Profile Badge */}
+        <div className="sidebar-user-badge">
+          <div className="user-avatar-circle">
+            {(user?.name || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div className="user-details-wrap">
+            <span className="user-name-display">{user?.name}</span>
+            <div className="user-role-badge-row">
+              <span className={`user-role-chip ${user?.role}`}>
+                {user?.role === 'both' ? 'Patient & Caregiver' : user?.role}
+              </span>
+            </div>
+          </div>
           <button
             type="button"
-            className="sidebar-add-btn"
-            onClick={() => setIsAddModalOpen(true)}
+            className="user-logout-btn"
+            onClick={logout}
+            title="Sign Out"
+            aria-label="Sign Out"
           >
-            <Plus size={17} />
-            <span>Add Medicine</span>
+            <LogOut size={16} />
           </button>
         </div>
 
+        {/* Add Medicine Action (Patients only) */}
+        {isPatientEligible && (
+          <div className="sidebar-action-wrap">
+            <button
+              type="button"
+              className="sidebar-add-btn"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus size={17} />
+              <span>Add Medicine</span>
+            </button>
+          </div>
+        )}
+
         <nav className="sidebar-nav">
-          <div className="nav-group-title">MAIN MENU</div>
-          {NAV_ITEMS.map((item) => {
+          <div className="nav-group-title">NAVIGATION</div>
+          {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
@@ -146,6 +205,7 @@ export default function AppLayout() {
           </div>
 
           <div className="mobile-header-actions">
+            <span className="mobile-user-name">{user?.name?.split(' ')[0]}</span>
             <button
               type="button"
               className="theme-toggle-btn-compact"
@@ -156,19 +216,30 @@ export default function AppLayout() {
             </button>
             <button
               type="button"
-              className="mobile-add-btn"
-              onClick={() => setIsAddModalOpen(true)}
-              aria-label="Add medicine"
+              className="mobile-logout-btn"
+              onClick={logout}
+              aria-label="Sign out"
+              title="Sign Out"
             >
-              <Plus size={18} />
+              <LogOut size={16} />
             </button>
+            {isPatientEligible && (
+              <button
+                type="button"
+                className="mobile-add-btn"
+                onClick={() => setIsAddModalOpen(true)}
+                aria-label="Add medicine"
+              >
+                <Plus size={18} />
+              </button>
+            )}
           </div>
         </header>
 
         {/* Mobile Horizontal Pill Navigation */}
         <div className="mobile-pill-bar">
           <PillNav
-            items={NAV_ITEMS.map((item) => ({
+            items={navItems.map((item) => ({
               id: item.path,
               label: item.label,
               icon: item.icon,
@@ -185,14 +256,15 @@ export default function AppLayout() {
       </div>
 
       {/* Global Add Medicine Modal */}
-      <AddMedicineModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          // Triggers window custom event so open views can refresh
-          window.dispatchEvent(new CustomEvent('curavit:medicine-added'));
-        }}
-      />
+      {isPatientEligible && (
+        <AddMedicineModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSuccess={() => {
+            window.dispatchEvent(new CustomEvent('curavit:medicine-added'));
+          }}
+        />
+      )}
     </div>
   );
 }

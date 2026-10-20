@@ -155,6 +155,83 @@
   color: var(--text-light);
 }
 
+.data-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.notif-permission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--bg-surface-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.permission-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.permission-status-pill.granted {
+  background: rgba(130, 148, 119, 0.2);
+  color: #4b6640;
+}
+
+.permission-status-pill.denied {
+  background: rgba(197, 83, 83, 0.15);
+  color: #a13434;
+}
+
+.permission-status-pill.default {
+  background: rgba(217, 119, 6, 0.15);
+  color: #92400e;
+}
+
+.permission-status-pill.unsupported {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-muted);
+}
+
+.notif-action-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.notif-limitations-notice {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--bg-surface-secondary);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.notif-limitations-notice h5 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.notif-limitations-notice ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.5;
+}
+
 @media (max-width: 700px) {
   .setting-row {
     flex-direction: column;

@@ -54,6 +54,15 @@ export default function AddMedicineModal({ isOpen, onClose, onSuccess, initialMe
     }
   }, [initialMedicine, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleTimesPerDayChange = (newCount) => {

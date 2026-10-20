@@ -353,10 +353,30 @@
 .dose-status-completed {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--status-success);
+}
+
+.dose-undo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dose-undo-btn:hover {
+  color: var(--text-main);
+  border-color: var(--primary-accent);
 }
 
 .completed-check-icon {

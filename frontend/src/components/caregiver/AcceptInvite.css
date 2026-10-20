@@ -1,0 +1,246 @@
+/* ==========================================================================
+   Curavit - Accept Invite Styles
+   ========================================================================== */
+
+.accept-invite-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--bg-page);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(130, 148, 119, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(232, 226, 245, 0.12) 0%, transparent 40%);
+}
+
+.accept-invite-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-lg);
+  animation: authFadeUp 0.35s ease forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.accept-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.invite-badge-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--primary-border);
+  margin-bottom: 0.35rem;
+}
+
+.invite-kicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+}
+
+.invite-patient-title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.invite-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Permissions Box */
+.invited-permissions-box {
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem;
+}
+
+.perms-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 0.75rem 0;
+}
+
+.perms-summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.perm-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-transform: capitalize;
+}
+
+.perm-check-icon {
+  color: var(--status-success);
+  flex-shrink: 0;
+}
+
+/* Auth / Acceptance Box */
+.auth-acceptance-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.logged-in-user-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--lavender-subtle);
+  border: 1px solid var(--lavender-border);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--lavender-text);
+}
+
+.accept-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--primary);
+  color: var(--primary-text);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.accept-submit-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.accept-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Inline Auth Box */
+.inline-auth-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inline-auth-intro {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  text-align: center;
+}
+
+.inline-auth-tabs {
+  display: flex;
+  background: var(--bg-surface-secondary);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+}
+
+.inline-tab {
+  flex: 1;
+  padding: 0.45rem 0.8rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.82rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.inline-tab.active {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-xs);
+}
+
+.inline-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.inline-alert.error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--status-missed-bg);
+  border: 1px solid var(--status-missed-border);
+  color: var(--status-missed);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+}
+
+/* Error States */
+.accept-invite-card.error {
+  text-align: center;
+  align-items: center;
+}
+
+.error-icon-box {
+  color: var(--status-missed);
+}
+
+.status-icon-box {
+  color: var(--status-warning);
+}
+
+.btn-return {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+}

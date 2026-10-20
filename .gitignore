@@ -22,3 +22,7 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Backups & Temp
+*.bak
+*.sqlite3-journal
